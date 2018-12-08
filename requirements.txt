@@ -6,6 +6,7 @@ itsdangerous==1.1.0
 Jinja2==2.10
 MarkupSafe==1.1.0
 mongoengine==0.8.0
+py-bcrypt==0.4
 pymongo==2.8
 Werkzeug==0.14.1
 WTForms==2.2.1
