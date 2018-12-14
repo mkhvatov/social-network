@@ -4,11 +4,12 @@ from flask_wtf import Form
 from wtforms import validators, StringField, PasswordField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import ValidationError
+from wtforms.widgets import TextArea
 
 from user.models import User
 
 
-class RegisterForm(Form):
+class BaseUserForm(Form):
     first_name = StringField('First Name', [validators.DataRequired()])
     last_name = StringField('Last Name', [validators.DataRequired()])
     email = EmailField('Email adress', [validators.DataRequired(), validators.Email()])
@@ -16,6 +17,12 @@ class RegisterForm(Form):
         validators.DataRequired(),
         validators.Length(min=4, max=25)
     ])
+    bio = StringField('Bio',
+                      widget=TextArea(),
+                      validators=[validators.Length(max=160)])
+
+
+class RegisterForm(BaseUserForm):
     password = PasswordField('New Password', [
         validators.DataRequired(),
         validators.EqualTo('confirm', message='Passwords must match'),
@@ -43,3 +50,7 @@ class LoginForm(Form):
         validators.DataRequired(),
         validators.Length(min=4, max=80)
     ])
+
+
+class EditForm(BaseUserForm):
+    pass

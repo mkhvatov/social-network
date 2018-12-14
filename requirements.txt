@@ -10,3 +10,4 @@ py-bcrypt==0.4
 pymongo==2.8
 Werkzeug==0.14.1
 WTForms==2.2.1
+blinker==1.4
