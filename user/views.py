@@ -97,14 +97,16 @@ def edit():
     if user:
         form = EditForm(obj=user)
         if form.validate_on_submit():
-            if user.username != form.username.data:
-                if User.objects.filter(form.username.data):
+            # check if new username
+            if user.username != form.username.data.lower():
+                if User.objects.filter(form.username.data.lower()).first():
                     error = "Username already exists"
                 else:
                     session['username'] = form.username.data.lower()
                     form.username.data = form.username.data.lower()
-            if user.email != form.email.data:
-                if User.objects.filter(form.email.data):
+            # check if new email
+            if user.email != form.email.data.lower():
+                if User.objects.filter(form.email.data.lower()).first():
                     error = "Email already exists"
                 else:
                     form.email.data = form.email.data.lower()
@@ -115,3 +117,16 @@ def edit():
         return render_template('user/edit.html', form=form, error=error, message=message)
     else:
         abort(404)
+
+
+@user_app.route('/confirm/<username>/<code>')
+def confirm(username, code):
+    user = User.objects.filter(username=username).first()
+    if user and user.change_configuration and user.change_configuration.get('confirmation_code'):
+        if code == user.change_configuration.get('confirmation_code'):
+            user.email = user.change_configuration.get('new_email')
+            user.change_configuration = {}
+            user.email_confirmed = True
+            user.save()
+            return render_template('user/email_confirmed.html')
+    abort(404)
