@@ -24,7 +24,7 @@ def register():
             email=form.email.data,
             first_name=form.first_name.data,
             last_name=form.last_name.data,
-            change_configuration = {
+            change_configuration={
                 "new_email": form.email.data.lower(),
                 "confirmation_code": code
             }
@@ -99,21 +99,35 @@ def edit():
         if form.validate_on_submit():
             # check if new username
             if user.username != form.username.data.lower():
-                if User.objects.filter(form.username.data.lower()).first():
-                    error = "Username already exists"
+                if User.objects.filter(username=form.username.data.lower()).first():
+                    error = 'Username already exists'
                 else:
                     session['username'] = form.username.data.lower()
                     form.username.data = form.username.data.lower()
             # check if new email
             if user.email != form.email.data.lower():
-                if User.objects.filter(form.email.data.lower()).first():
-                    error = "Email already exists"
+                if User.objects.filter(email=form.email.data.lower()).first():
+                    error = 'Email already exists'
                 else:
-                    form.email.data = form.email.data.lower()
+                    code = str(uuid.uuid4())
+                    user.change_configuration = {
+                        "new_email": form.email.data.lower(),
+                        "confirmation_code": code
+                    }
+                    user.email_confirmed = False
+                    form.email.data = user.email
+                    message = "You will need to confirm the new email to complete this change"
+
+                    # email the user
+                    body_html = render_template('mail/user/change_email.html', user=user)
+                    body_text = render_template('mail/user/change_email.txt', user=user)
+                    email(user.change_configuration['new_email'], "Confirm your new email", body_html, body_text)
+
             if not error:
                 form.populate_obj(user)
                 user.save()
-                message = "Profile updated"
+                if not message:
+                    message = "Profile updated"
         return render_template('user/edit.html', form=form, error=error, message=message)
     else:
         abort(404)
@@ -121,6 +135,7 @@ def edit():
 
 @user_app.route('/confirm/<username>/<code>')
 def confirm(username, code):
+    edit_profile = False
     user = User.objects.filter(username=username).first()
     if user and user.change_configuration and user.change_configuration.get('confirmation_code'):
         if code == user.change_configuration.get('confirmation_code'):
