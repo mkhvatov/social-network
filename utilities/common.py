@@ -1,6 +1,7 @@
 from time import time
 
 import boto3
+from flask import current_app
 
 from settings import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME
 
@@ -10,6 +11,10 @@ def utc_now_timestamp():
 
 
 def email(to_email, subject, body_html, body_txt):
+    # don't run this if we're running a test
+    if current_app.config.get('TESTING'):
+        return False
+
     client = boto3.client('ses',
                           aws_access_key_id=AWS_ACCESS_KEY_ID,
                           aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
