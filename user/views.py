@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, redirect, session, url_fo
 import bcrypt
 
 from user.models import User
-from user.forms import RegisterForm, LoginForm, EditForm
+from user.forms import RegisterForm, LoginForm, EditForm, ForgotForm
 from utilities.common import email
 
 
@@ -145,3 +145,13 @@ def confirm(username, code):
             user.save()
             return render_template('user/email_confirmed.html')
     abort(404)
+
+
+@user_app.route('/forgot', methods=('GET', 'POST'))
+def forgot():
+    error = None
+    message = None
+    form = ForgotForm()
+    if form.validate_on_submit():
+        pass
+    return render_template('user/forgot.html', form=form, error=error, message=message)

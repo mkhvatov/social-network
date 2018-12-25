@@ -12,7 +12,7 @@ from user.models import User
 class BaseUserForm(Form):
     first_name = StringField('First Name', [validators.DataRequired()])
     last_name = StringField('Last Name', [validators.DataRequired()])
-    email = EmailField('Email adress', [validators.DataRequired(), validators.Email()])
+    email = EmailField('Email address', [validators.DataRequired(), validators.Email()])
     username = StringField('Username', [
         validators.DataRequired(),
         validators.Length(min=4, max=25)
@@ -54,3 +54,16 @@ class LoginForm(Form):
 
 class EditForm(BaseUserForm):
     pass
+
+
+class ForgotForm(Form):
+    email = EmailField('Email address',
+                       [validators.DataRequired(), validators.Email()]
+                       )
+
+
+class PasswordResetForm(Form):
+    current_password = PasswordField('Current Password',
+                                     [validators.DataRequired(),
+                                      validators.Length(min=4, max=80)]
+                                     )
