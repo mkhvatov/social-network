@@ -153,5 +153,18 @@ def forgot():
     message = None
     form = ForgotForm()
     if form.validate_on_submit():
-        pass
+        user = User.objects.filter(email=form.email.data.lower()).first()
+        if user:
+            code = str(uuid.uuid4())
+            user.change_configuration = {
+                'password_reset_code': code
+            }
+            user.save()
+
+            # email the user
+            body_html = render_template('mail/user/password_reset.html', user=user)
+            body_text = render_template('mail/user/password_reset.txt', user=user)
+            email(user.email, "Password reset request", body_html, body_text)
+
+        message = "You will receive a password reset email if we find that email in our system"
     return render_template('user/forgot.html', form=form, error=error, message=message)
