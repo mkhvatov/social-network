@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, redirect, session, url_fo
 import bcrypt
 
 from user.models import User
-from user.forms import RegisterForm, LoginForm, EditForm, ForgotForm
+from user.forms import RegisterForm, LoginForm, EditForm, ForgotForm, PasswordResetForm
 from utilities.common import email
 
 
@@ -168,3 +168,39 @@ def forgot():
 
         message = "You will receive a password reset email if we find that email in our system"
     return render_template('user/forgot.html', form=form, error=error, message=message)
+
+
+@user_app.route('/password_reset/<username>/<code>', methods=('GET', 'POST'))
+def password_reset(username, code):
+    message = None
+    require_current = None
+
+    form = PasswordResetForm()
+
+    user = User.objects.filter(username=username).first()
+    if not user or code != user.change_configuration.get('password_reset_code'):
+        abort(404)
+
+    if request.method == 'POST':
+        del form.current_password
+        if form.validate_on_submit():
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(form.password.data, salt)
+            user.password = hashed_password
+            user.change_configuration = {}
+            user.save()
+
+            if session.get('username'):
+                session.pop('username')
+            return redirect(url_for('user_app.password_reset_complete'))
+
+    return render_template('user/password_reset.html',
+                           form=form,
+                           message=message,
+                           username=username,
+                           code=code)
+
+
+@user_app.route('/password_reset_complete')
+def password_reset_complete():
+    return render_template('user/password_change_confirmed.html')

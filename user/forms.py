@@ -22,13 +22,16 @@ class BaseUserForm(Form):
                       validators=[validators.Length(max=160)])
 
 
-class RegisterForm(BaseUserForm):
+class PasswordBaseForm(Form):
     password = PasswordField('New Password', [
         validators.DataRequired(),
         validators.EqualTo('confirm', message='Passwords must match'),
         validators.Length(min=4, max=80)
     ])
     confirm = PasswordField('Repeat Password')
+
+
+class RegisterForm(BaseUserForm, PasswordBaseForm):
 
     def validate_username(self, field):
         if User.objects.filter(username=field.data).first():
@@ -62,7 +65,7 @@ class ForgotForm(Form):
                        )
 
 
-class PasswordResetForm(Form):
+class PasswordResetForm(PasswordBaseForm):
     current_password = PasswordField('Current Password',
                                      [validators.DataRequired(),
                                       validators.Length(min=4, max=80)]
