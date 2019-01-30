@@ -1,11 +1,15 @@
 import uuid
+import os
 
 from flask import Blueprint, render_template, request, redirect, session, url_for, abort
 import bcrypt
+from werkzeug import secure_filename
 
 from user.models import User
 from user.forms import RegisterForm, LoginForm, EditForm, ForgotForm, PasswordResetForm
 from utilities.common import email
+from settings import UPLOAD_FOLDER
+from utilities.imaging import thumbnail_process
 
 
 user_app = Blueprint('user_app', __name__)
@@ -81,7 +85,7 @@ def logout():
 def profile(username):
     edit_profile = False
     user = User.objects.filter(username=username).first()
-    if session.get('username') and user.username == session.get('username'):
+    if user and session.get('username') and user.username == session.get('username'):
         edit_profile = True
     if user:
         return render_template('user/profile.html', user=user, edit_profile=edit_profile)
@@ -97,6 +101,15 @@ def edit():
     if user:
         form = EditForm(obj=user)
         if form.validate_on_submit():
+
+            # check if image
+            image_ts = None
+            if request.files.get('image'):
+                filename = secure_filename(form.image.data.filename)
+                file_path = os.path.join(UPLOAD_FOLDER, 'user', filename)
+                form.image.data.save(file_path)
+                image_ts = str(thumbnail_process(file_path, 'user', str(user.id)))
+
             # check if new username
             if user.username != form.username.data.lower():
                 if User.objects.filter(username=form.username.data.lower()).first():
@@ -125,10 +138,13 @@ def edit():
 
             if not error:
                 form.populate_obj(user)
+                if image_ts:
+                    user.profile_image = image_ts
                 user.save()
                 if not message:
                     message = "Profile updated"
-        return render_template('user/edit.html', form=form, error=error, message=message)
+
+        return render_template("user/edit.html", form=form, error=error, message=message, user=user)
     else:
         abort(404)
 

@@ -4,7 +4,7 @@ import os
 
 from application import db
 from utilities.common import utc_now_timestamp as now
-from settings import STATIC_IMAGE_URL as IMAGE_URL
+from settings import STATIC_IMAGE_URL
 
 
 class User(db.Document):
@@ -25,7 +25,7 @@ class User(db.Document):
         document.email = document.email.lower()
 
     def profile_imgsrc(self, size):
-        return os.path.join(IMAGE_URL, 'user', '%s.%s.%s.png' % self.id, self.profile_image, size)
+        return os.path.join(STATIC_IMAGE_URL, 'user', '%s.%s.%s.png' % (self.id, self.profile_image, size))
 
     meta = {
         'indexes': ['username', 'email', '-created'],
