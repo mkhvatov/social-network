@@ -1,0 +1,61 @@
+version: '3'
+services:
+  server:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: "python /app/manage.py runserver"
+    restart: "no"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app/
+      - MONGODB_HOST=db
+      - SIMPLE_LOG=True
+    ports:
+      - "5000:5000"
+
+  db:
+    image: mongo
+    container_name: "mongodb"
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    command: mongod
+    volumes:
+      - data:/data/db
+    ports:
+      - "27017:27017"
+
+  server_test:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    restart: "no"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app/src
+      - IS_TESTING=True
+      - MONGODB_HOST=db_test
+      - MONGODB_USER=flaskbook
+      - MONGODB_PASSWD=123qwe45
+      - MONGODB_AUTHDB=admin
+      - SIMPLE_LOG=True
+    depends_on:
+      - db_test
+
+  db_test:
+    image: mongo
+    container_name: "mongodb_test"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=flaskbook
+      - MONGO_INITDB_ROOT_PASSWORD=123qwe45
+    command: mongod
+    ports:
+      - "27017:27017"
+
+volumes:
+  data:

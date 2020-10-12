@@ -1,7 +1,6 @@
 /data/*
 /log/*
 /venv/*
-/settings.py
 /__pycache__/*
 /logs/*
 /.idea/*
