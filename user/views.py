@@ -3,7 +3,7 @@ import os
 
 from flask import Blueprint, render_template, request, redirect, session, url_for, abort
 import bcrypt
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 
 from user.models import User
 from user.forms import RegisterForm, LoginForm, EditForm, ForgotForm, PasswordResetForm

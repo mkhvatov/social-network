@@ -1,0 +1,16 @@
+Flask
+flask-mongoengine
+Flask-Script
+Flask-WTF
+itsdangerous
+Jinja2
+MarkupSafe
+mongoengine
+py-bcrypt
+pymongo
+Werkzeug
+WTForms
+blinker
+boto3
+Wand
+email-validator
