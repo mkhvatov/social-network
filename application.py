@@ -1,6 +1,8 @@
 from flask import Flask
 from flask_mongoengine import MongoEngine
 
+from settings import MONGODB_SETTINGS
+
 db = MongoEngine()
 
 
@@ -10,6 +12,7 @@ def create_app(**config_overrides):
 
     app.config.update(config_overrides)
 
+    app.config['MONGODB_SETTINGS'] = MONGODB_SETTINGS
     db.init_app(app)
 
     from user.views import user_app
